@@ -120,7 +120,7 @@ export default function BriefScreen({ result, onRefresh, onChangeDomain, refresh
             onClick={() => setOpenDoc('hackathon')}
             className="text-xs text-zinc-500 border border-zinc-800 rounded px-3 py-1.5 hover:border-zinc-600 hover:text-zinc-300 transition-colors hidden sm:block"
           >
-            Hack Scope
+            ContextCon Hack Scope
           </button>
           <button
             onClick={handleRefreshClick}

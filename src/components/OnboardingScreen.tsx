@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import DocModal from './DocModal'
+import VisionDoc from './VisionDoc'
+import HackathonDoc from './HackathonDoc'
 
 type Props = {
   onSubmit: (domain: string) => void
@@ -8,7 +11,7 @@ type Props = {
   error?: string | null
 }
 
-const EXAMPLES = ['retool.com', 'notion.so', 'linear.app', 'figma.com']
+const EXAMPLES = ['retool.com', 'hightouch.com', 'linear.app', 'figma.com']
 
 function cleanDomain(raw: string): string {
   return raw
@@ -23,6 +26,7 @@ function cleanDomain(raw: string): string {
 export default function OnboardingScreen({ onSubmit, initialDomain, error }: Props) {
   const [value, setValue] = useState(initialDomain ?? '')
   const [submitting, setSubmitting] = useState(false)
+  const [openDoc, setOpenDoc] = useState<'vision' | 'hackathon' | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -35,6 +39,23 @@ export default function OnboardingScreen({ onSubmit, initialDomain, error }: Pro
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-4">
+
+      {/* Top-right doc buttons */}
+      <div className="fixed top-4 right-4 flex items-center gap-2">
+        <button
+          onClick={() => setOpenDoc('vision')}
+          className="text-xs text-zinc-500 border border-zinc-800 rounded px-3 py-1.5 hover:border-zinc-600 hover:text-zinc-300 transition-colors"
+        >
+          Product Vision
+        </button>
+        <button
+          onClick={() => setOpenDoc('hackathon')}
+          className="text-xs text-zinc-500 border border-zinc-800 rounded px-3 py-1.5 hover:border-zinc-600 hover:text-zinc-300 transition-colors"
+        >
+          ContextCon Hack Scope
+        </button>
+      </div>
+
       <div className="w-full max-w-md">
 
         {/* Badge */}
@@ -91,7 +112,39 @@ export default function OnboardingScreen({ onSubmit, initialDomain, error }: Pro
           ))}
         </div>
 
+        {/* Doc buttons + Powered by */}
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setOpenDoc('vision')}
+              className="text-xs text-zinc-500 border border-zinc-800 rounded px-3 py-1.5 hover:border-zinc-600 hover:text-zinc-300 transition-colors"
+            >
+              Product Vision
+            </button>
+            <button
+              onClick={() => setOpenDoc('hackathon')}
+              className="text-xs text-zinc-500 border border-zinc-800 rounded px-3 py-1.5 hover:border-zinc-600 hover:text-zinc-300 transition-colors"
+            >
+              ContextCon Hack Scope
+            </button>
+          </div>
+          <p className="text-zinc-700 text-xs">
+            Powered by <span className="text-zinc-500 font-medium">CrustData</span>
+          </p>
+        </div>
+
       </div>
+
+      {openDoc === 'vision' && (
+        <DocModal title="Overall Product Vision" onClose={() => setOpenDoc(null)}>
+          <VisionDoc />
+        </DocModal>
+      )}
+      {openDoc === 'hackathon' && (
+        <DocModal title="Scope for the ContextCon Hack" onClose={() => setOpenDoc(null)}>
+          <HackathonDoc />
+        </DocModal>
+      )}
     </div>
   )
 }
