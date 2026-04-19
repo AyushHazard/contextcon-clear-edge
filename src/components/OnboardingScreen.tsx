@@ -61,7 +61,7 @@ export default function OnboardingScreen({ onSubmit, initialDomain, error }: Pro
         {/* Badge */}
         <div className="flex justify-center mb-8">
           <span className="text-[10px] font-medium tracking-widest uppercase text-zinc-500 border border-zinc-800 rounded-full px-3 py-1">
-            Competitive Intelligence
+            Introspective Analysis
           </span>
         </div>
 
