@@ -34,53 +34,63 @@ export default function OnboardingScreen({ onSubmit, initialDomain, error }: Pro
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-lg">
+    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-md">
+
+        {/* Badge */}
+        <div className="flex justify-center mb-8">
+          <span className="text-[10px] font-medium tracking-widest uppercase text-zinc-500 border border-zinc-800 rounded-full px-3 py-1">
+            Competitive Intelligence
+          </span>
+        </div>
+
         {/* Wordmark */}
         <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold text-white tracking-tight">Clear Edge</h1>
-          <p className="mt-3 text-gray-400 text-base">
-            Enter your company domain. Get a competitive intelligence brief in seconds.
+          <h1 className="text-5xl font-bold text-zinc-50 tracking-tight">Clear Edge</h1>
+          <p className="mt-4 text-zinc-400 text-sm leading-relaxed max-w-sm mx-auto">
+            Enter your company domain. Get a structured intelligence brief on your competitive landscape and growth position.
           </p>
         </div>
 
         {/* Input form */}
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="retool.com"
-            disabled={submitting}
-            className="flex-1 bg-gray-900 border border-gray-700 text-white placeholder-gray-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 disabled:opacity-50"
-          />
-          <button
-            type="submit"
-            disabled={!value.trim() || submitting}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium rounded-lg px-5 py-3 text-sm transition-colors"
-          >
-            {submitting ? 'Analysing…' : 'Analyse'}
-          </button>
-        </form>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="retool.com"
+              disabled={submitting}
+              className="flex-1 bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-600 rounded-md px-4 py-2.5 text-sm focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 disabled:opacity-50 transition-colors font-mono"
+            />
+            <button
+              type="submit"
+              disabled={!value.trim() || submitting}
+              className="bg-zinc-50 hover:bg-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed text-zinc-950 font-medium rounded-md px-5 py-2.5 text-sm transition-colors whitespace-nowrap"
+            >
+              {submitting ? 'Analysing…' : 'Analyse'}
+            </button>
+          </div>
 
-        {/* Error */}
-        {error && (
-          <p className="mt-3 text-red-400 text-sm">{error}</p>
-        )}
+          {error && (
+            <p className="text-red-400 text-xs px-1">{error}</p>
+          )}
+        </form>
 
         {/* Example chips */}
         <div className="mt-6 flex items-center gap-2 flex-wrap">
-          <span className="text-gray-600 text-xs">Try:</span>
+          <span className="text-zinc-600 text-xs">Try:</span>
           {EXAMPLES.map((ex) => (
             <button
               key={ex}
               onClick={() => setValue(ex)}
-              className="text-xs text-gray-400 border border-gray-700 rounded px-2 py-1 hover:border-indigo-500 hover:text-indigo-400 transition-colors"
+              className="text-xs text-zinc-500 border border-zinc-800 rounded-md px-2.5 py-1 hover:border-zinc-600 hover:text-zinc-300 transition-colors font-mono"
             >
               {ex}
             </button>
           ))}
         </div>
+
       </div>
     </div>
   )
