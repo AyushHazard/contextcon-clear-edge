@@ -6,13 +6,13 @@ import LoadingScreen from '@/components/LoadingScreen'
 import BriefScreen from '@/components/BriefScreen'
 
 export default function Home() {
-  const { state, result, domain, error, refreshError, runAnalysis, refreshResults } = useAppState()
+  const { state, result, domain, error, refreshError, loadingMessage, runAnalysis, refreshResults, changeDomain } = useAppState()
 
-  if (state === 'loading') return <LoadingScreen />
+  if (state === 'loading') return <LoadingScreen message={loadingMessage} />
 
   if (state === 'brief' && result) {
     return (
-      <BriefScreen result={result} onRefresh={refreshResults} refreshError={refreshError} />
+      <BriefScreen result={result} onRefresh={refreshResults} onChangeDomain={changeDomain} refreshError={refreshError} />
     )
   }
 

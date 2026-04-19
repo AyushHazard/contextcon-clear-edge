@@ -8,17 +8,45 @@ import GrowthRow from './GrowthRow'
 type Props = {
   result: AnalysisResult
   onRefresh: () => void
+  onChangeDomain: (domain: string) => void
   refreshError?: string | null
 }
 
-export default function BriefScreen({ result, onRefresh, refreshError }: Props) {
+function cleanDomain(raw: string): string {
+  return raw.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0]
+}
+
+type Tab = 'landscape' | 'growth'
+
+export default function BriefScreen({ result, onRefresh, onChangeDomain, refreshError }: Props) {
   const [confirmPending, setConfirmPending] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editValue, setEditValue] = useState(result.userDomain)
+  const [activeTab, setActiveTab] = useState<Tab>('landscape')
 
   useEffect(() => {
     if (!confirmPending) return
     const t = setTimeout(() => setConfirmPending(false), 3000)
     return () => clearTimeout(t)
   }, [confirmPending])
+
+  // Reset edit value whenever the result changes (after a domain change completes)
+  useEffect(() => {
+    setEditValue(result.userDomain)
+    setEditing(false)
+  }, [result.userDomain])
+
+  function submitDomainEdit() {
+    const d = cleanDomain(editValue)
+    if (!d) return
+    setEditing(false)
+    onChangeDomain(d)
+  }
+
+  function handleEditKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') submitDomainEdit()
+    if (e.key === 'Escape') { setEditing(false); setEditValue(result.userDomain) }
+  }
 
   function handleRefreshClick() {
     if (confirmPending) {
@@ -43,9 +71,52 @@ export default function BriefScreen({ result, onRefresh, refreshError }: Props) 
       <div className="sticky top-0 z-10 bg-gray-950/90 backdrop-blur border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-white font-bold text-lg">Clear Edge</span>
-          <span className="bg-gray-800 text-gray-300 text-xs rounded px-2 py-1 font-mono">
-            {result.userDomain}
-          </span>
+
+          {editing ? (
+            <div className="flex items-center gap-1">
+              <input
+                autoFocus
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onKeyDown={handleEditKeyDown}
+                className="bg-gray-800 border border-indigo-500 text-gray-200 text-xs rounded px-2 py-1 font-mono w-36 focus:outline-none"
+              />
+              <button
+                onClick={submitDomainEdit}
+                className="text-indigo-400 hover:text-indigo-300 p-1"
+                title="Confirm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+              <button
+                onClick={() => { setEditing(false); setEditValue(result.userDomain) }}
+                className="text-gray-500 hover:text-gray-300 p-1"
+                title="Cancel"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <span className="bg-gray-800 text-gray-300 text-xs rounded px-2 py-1 font-mono">
+                {result.userDomain}
+              </span>
+              <button
+                onClick={() => setEditing(true)}
+                className="text-gray-600 hover:text-gray-300 p-1 transition-colors"
+                title="Change domain"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                </svg>
+              </button>
+            </div>
+          )}
+
           <span className="text-gray-600 text-xs hidden sm:block">Analysed {analysedAt}</span>
         </div>
         <button
@@ -67,46 +138,57 @@ export default function BriefScreen({ result, onRefresh, refreshError }: Props) 
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-14">
-        {/* Section A: Competitor Landscape */}
-        <section>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">
-            Competitor Landscape
-          </h2>
+      {/* Tabs */}
+      <div className="border-b border-gray-800 px-6">
+        <div className="max-w-5xl mx-auto flex gap-0">
+          {([
+            { id: 'landscape', label: 'Competitor Landscape' },
+            { id: 'growth', label: 'Growth Intelligence' },
+          ] as { id: Tab; label: string }[]).map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.id
+                  ? 'border-indigo-500 text-white'
+                  : 'border-transparent text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-          {/* Landscape summary callout */}
-          <div className="bg-gray-900 border-l-4 border-indigo-500 rounded-r-xl px-5 py-4 mb-6">
-            <p className="text-gray-300 text-sm leading-relaxed">{result.landscapeSummary}</p>
-          </div>
+      <div className="max-w-5xl mx-auto px-6 py-10">
+        {activeTab === 'landscape' && (
+          <section>
+            <div className="bg-gray-900 border-l-4 border-indigo-500 rounded-r-xl px-5 py-4 mb-6">
+              <p className="text-gray-300 text-sm leading-relaxed">{result.landscapeSummary}</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {result.competitors.map((c) => (
+                <CompetitorCard key={c.domain} competitor={c} />
+              ))}
+            </div>
+          </section>
+        )}
 
-          {/* Competitor cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {result.competitors.map((c) => (
-              <CompetitorCard key={c.domain} competitor={c} />
-            ))}
-          </div>
-        </section>
-
-        {/* Section B: Growth Intelligence */}
-        <section>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">
-            Growth Intelligence
-          </h2>
-
-          <div className="space-y-3 mb-6">
-            {result.competitors.map((c) => (
-              <GrowthRow key={c.domain} competitor={c} />
-            ))}
-          </div>
-
-          {/* Growth recommendation callout */}
-          <div className="bg-gray-900 border-l-4 border-green-500 rounded-r-xl px-5 py-4">
-            <p className="text-green-400 text-xs font-semibold uppercase tracking-wide mb-2">
-              Growth Recommendation
-            </p>
-            <p className="text-gray-300 text-sm leading-relaxed">{result.growthRecommendation}</p>
-          </div>
-        </section>
+        {activeTab === 'growth' && (
+          <section>
+            <div className="space-y-3 mb-6">
+              {result.competitors.map((c) => (
+                <GrowthRow key={c.domain} competitor={c} />
+              ))}
+            </div>
+            <div className="bg-gray-900 border-l-4 border-green-500 rounded-r-xl px-5 py-4">
+              <p className="text-green-400 text-xs font-semibold uppercase tracking-wide mb-2">
+                Growth Recommendation
+              </p>
+              <p className="text-gray-300 text-sm leading-relaxed">{result.growthRecommendation}</p>
+            </div>
+          </section>
+        )}
       </div>
     </div>
   )

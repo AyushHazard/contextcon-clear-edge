@@ -2,32 +2,17 @@
 
 import { useState, useEffect } from 'react'
 
-const MESSAGES = [
-  { text: 'Identifying your company…', at: 0 },
-  { text: 'Finding your competitors…', at: 2000 },
-  { text: 'Analysing growth signals…', at: 5000 },
-  { text: 'Generating your brief…', at: 9000 },
-]
+type Props = { message?: string }
 
-export default function LoadingScreen() {
-  const [msgIndex, setMsgIndex] = useState(0)
+export default function LoadingScreen({ message }: Props) {
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
     const start = Date.now()
-
-    const timers = MESSAGES.slice(1).map((m, i) =>
-      setTimeout(() => setMsgIndex(i + 1), m.at)
-    )
-
     const ticker = setInterval(() => {
       setElapsed(Math.floor((Date.now() - start) / 1000))
     }, 1000)
-
-    return () => {
-      timers.forEach(clearTimeout)
-      clearInterval(ticker)
-    }
+    return () => clearInterval(ticker)
   }, [])
 
   return (
@@ -35,17 +20,14 @@ export default function LoadingScreen() {
       <div className="text-center">
         <h1 className="text-2xl font-bold text-white mb-8">Clear Edge</h1>
 
-        {/* Spinner */}
         <div className="flex justify-center mb-6">
           <div className="w-8 h-8 border-2 border-gray-700 border-t-indigo-500 rounded-full animate-spin" />
         </div>
 
-        {/* Message */}
         <p className="text-gray-300 text-base font-medium min-h-[1.5rem]">
-          {MESSAGES[msgIndex].text}
+          {message ?? 'Starting analysis…'}
         </p>
 
-        {/* Elapsed */}
         <p className="mt-3 text-gray-600 text-xs">{elapsed}s</p>
       </div>
     </div>
