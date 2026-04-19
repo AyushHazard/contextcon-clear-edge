@@ -1,10 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getStoredState, setDomain, setResult } from '@/lib/storage'
 import type { AnalysisResult } from '@/lib/types'
 
 export type AppState = 'onboarding' | 'loading' | 'brief'
+
+const LOADING_MESSAGES = [
+  'Identifying your company…',
+  'Finding competitor candidates…',
+  'Verifying direct competitors…',
+  'Enriching competitor data…',
+  'Analysing competitor landscape…',
+  'Analysing growth strategies…',
+  'Generating intelligence brief…',
+  'Almost there…',
+]
 
 export function useAppState() {
   const [state, setState] = useState<AppState>('onboarding')
@@ -12,7 +23,8 @@ export function useAppState() {
   const [domain, setDomainState] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [refreshError, setRefreshError] = useState<string | null>(null)
-  const [loadingMessage, setLoadingMessage] = useState<string>('Starting analysis…')
+  const [loadingMessage, setLoadingMessage] = useState<string>(LOADING_MESSAGES[0])
+  const msgIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     const stored = getStoredState()
@@ -26,32 +38,36 @@ export function useAppState() {
     }
   }, [])
 
+  function startRotatingMessages() {
+    let idx = 0
+    setLoadingMessage(LOADING_MESSAGES[0])
+    msgIntervalRef.current = setInterval(() => {
+      idx = Math.min(idx + 1, LOADING_MESSAGES.length - 1)
+      setLoadingMessage(LOADING_MESSAGES[idx])
+    }, 8000)
+  }
+
+  function stopRotatingMessages() {
+    if (msgIntervalRef.current) {
+      clearInterval(msgIntervalRef.current)
+      msgIntervalRef.current = null
+    }
+  }
+
   async function callAnalyse(d: string): Promise<AnalysisResult> {
-    // Step 1: start the job
-    const startRes = await fetch('/api/analyse/start', {
+    const res = await fetch('/api/analyse/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ domain: d }),
     })
-    if (!startRes.ok) {
-      const json = await startRes.json().catch(() => ({}))
-      throw new Error(json.error ?? `Failed to start analysis (${startRes.status})`)
+
+    const json = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      throw new Error(json.error ?? `Analysis failed (${res.status})`)
     }
-    const { jobId } = await startRes.json()
 
-    // Step 2: poll until done
-    while (true) {
-      await new Promise((r) => setTimeout(r, 2000))
-
-      const statusRes = await fetch(`/api/analyse/status/${jobId}`)
-      if (!statusRes.ok) throw new Error('Lost track of analysis job.')
-
-      const job = await statusRes.json()
-
-      if (job.status === 'done') return job.result as AnalysisResult
-      if (job.status === 'error') throw new Error(job.error)
-      if (job.status === 'pending') setLoadingMessage(job.message)
-    }
+    return json.result as AnalysisResult
   }
 
   async function runAnalysis(inputDomain: string) {
@@ -59,12 +75,15 @@ export function useAppState() {
     setDomain(inputDomain)
     setDomainState(inputDomain)
     setState('loading')
+    startRotatingMessages()
     try {
       const data = await callAnalyse(inputDomain)
+      stopRotatingMessages()
       setResult(data)
       setResultState(data)
       setState('brief')
     } catch (err: unknown) {
+      stopRotatingMessages()
       const msg = err instanceof Error ? err.message : 'Analysis failed. Please try again.'
       setError(msg)
       setState('onboarding')
@@ -75,14 +94,16 @@ export function useAppState() {
     if (!domain) return
     setRefreshError(null)
     setState('loading')
+    startRotatingMessages()
     try {
       const data = await callAnalyse(domain)
+      stopRotatingMessages()
       setResult(data)
       setResultState(data)
       setState('brief')
     } catch (err: unknown) {
+      stopRotatingMessages()
       const msg = err instanceof Error ? err.message : 'Refresh failed.'
-      // Restore previous brief — do NOT lose it on a failed refresh
       const stored = getStoredState()
       setResultState(stored.result)
       setState('brief')
