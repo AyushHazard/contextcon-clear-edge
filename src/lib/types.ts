@@ -27,17 +27,9 @@ export type CrustdataCompany = {
       upper_bound_usd?: number | null
     }
   }
-  web_traffic?: {
-    monthly_visitors?: number | null
-  }
   hiring?: {
-    recent_titles_csv?: string | null
     openings_count?: number | null
     openings_growth_percent?: number | null
-  }
-  seo?: {
-    monthly_google_ads_budget?: number | null
-    monthly_organic_clicks?: number | null
   }
   followers?: {
     yoy_percent?: number | null
@@ -49,11 +41,6 @@ export type CrustdataCompany = {
     professional_network_specialities?: string[]
     professional_network_industry?: string
   }
-  news?: Array<{ title?: string; url?: string; date?: string }>
-  competitors?: {
-    company_ids?: number[]
-    websites?: string[]
-  }
 }
 
 export type GrowthMotion =
@@ -63,30 +50,68 @@ export type GrowthMotion =
   | 'Product-led'
   | 'Community-led'
 
-export type ClaudeCompetitor = {
-  domain: string
-  threatSummary: string
-  growthMotion: GrowthMotion
+// Step 3 — per-candidate competitor verification
+export type CompetitorVerification = {
+  isDirectCompetitor: boolean
+  reason: string
+}
+
+// Step 5a — per-competitor landscape analysis
+export type CompetitorLandscapeAnalysis = {
+  competitorDomain: string
+  competitorName: string
+  fundingVerdict: string
+  growthTrajectory: string
+  productDescription: string
+  keyDifferentiator: string
+  overlap: string
+  threatLevel: 'High' | 'Medium' | 'Low'
+  threatReason: string
+  overallVerdict: string
+}
+
+// Step 5b — per-competitor growth analysis
+export type CompetitorGrowthAnalysis = {
+  competitorDomain: string
+  growthMotion: 'Sales-led' | 'Content-led' | 'Paid-led' | 'Product-led' | 'Community-led'
   growthMotionReason: string
+  channelBreakdown: Array<{
+    channel: string
+    effectiveness: 'High' | 'Medium' | 'Low' | 'Unknown'
+    evidence: string
+  }>
+  adIntelligence: string
+  hiringSignals: string
+  keyInsight: string
 }
 
-export type ClaudeAnalysis = {
-  landscapeSummary: string
-  competitors: ClaudeCompetitor[]
-  growthRecommendation: string
+// Step 6a — overall landscape synthesis
+export type LandscapeSummary = {
+  overallNarrative: string
+  marketDynamics: string
+  biggestThreat: string
+  opportunityGap: string
 }
 
-export type EnrichedCompetitor = CrustdataCompany &
-  ClaudeCompetitor & {
-    domain: string
-  }
+// Step 6b — overall growth synthesis
+export type GrowthSummary = {
+  dominantMotionInSpace: string
+  channelBenchmarks: string
+  adLandscapeOverview: string
+  recommendedMotion: 'Sales-led' | 'Content-led' | 'Paid-led' | 'Product-led' | 'Community-led'
+  recommendation: string
+}
 
+// Full result — stored in localStorage
 export type AnalysisResult = {
   userDomain: string
   analysedAt: string
-  landscapeSummary: string
-  growthRecommendation: string
-  competitors: EnrichedCompetitor[]
+  userCompany: CrustdataCompany
+  competitors: CrustdataCompany[]
+  landscapeAnalyses: CompetitorLandscapeAnalysis[]
+  landscapeSummary: LandscapeSummary
+  growthAnalyses: CompetitorGrowthAnalysis[]
+  growthSummary: GrowthSummary
 }
 
 export type StoredState = {

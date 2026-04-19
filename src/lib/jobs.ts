@@ -5,8 +5,10 @@ export type JobState =
   | { status: 'done'; result: AnalysisResult }
   | { status: 'error'; error: string }
 
-// In-memory store — works for single-instance dev/demo. Not for multi-instance prod.
-const jobs = new Map<string, JobState>()
+// Persist across Next.js HMR hot reloads in dev by attaching to globalThis
+const g = globalThis as typeof globalThis & { __clearEdgeJobs?: Map<string, JobState> }
+if (!g.__clearEdgeJobs) g.__clearEdgeJobs = new Map()
+const jobs = g.__clearEdgeJobs
 
 export function createJob(id: string) {
   jobs.set(id, { status: 'pending', message: 'Starting analysis…' })

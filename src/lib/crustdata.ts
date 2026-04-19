@@ -109,8 +109,24 @@ export async function findCompetitorsByTaxonomy(
     limit: 10,
   })
 
-  // Exclude the user's own company, take top 5
+  // Exclude the user's own company, take top 10 for Gemini verification step
   return results
     .filter((c) => c.crustdata_company_id !== excludeId)
-    .slice(0, 5)
+    .slice(0, 10)
+}
+
+export async function enrichCompanyIds(
+  ids: number[],
+  apiKey: string
+): Promise<CrustdataCompany[]> {
+  if (!ids.length) return []
+  return crustSearch(apiKey, {
+    filters: {
+      field: 'crustdata_company_id',
+      type: 'in',
+      value: ids.slice(0, 5),
+    },
+    fields: BASE_FIELDS,
+    limit: 5,
+  })
 }
