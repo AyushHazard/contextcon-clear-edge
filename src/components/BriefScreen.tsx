@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import type { AnalysisResult } from '@/lib/types'
 import CompetitorCard from './CompetitorCard'
 import GrowthRow from './GrowthRow'
+import DocModal from './DocModal'
+import VisionDoc from './VisionDoc'
+import HackathonDoc from './HackathonDoc'
 
 type Props = {
   result: AnalysisResult
@@ -23,6 +26,7 @@ export default function BriefScreen({ result, onRefresh, onChangeDomain, refresh
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState(result.userDomain)
   const [activeTab, setActiveTab] = useState<Tab>('landscape')
+  const [openDoc, setOpenDoc] = useState<'vision' | 'hackathon' | null>(null)
 
   useEffect(() => {
     if (!confirmPending) return
@@ -102,6 +106,19 @@ export default function BriefScreen({ result, onRefresh, onChangeDomain, refresh
 
           <span className="text-gray-600 text-xs hidden sm:block">Analysed {analysedAt}</span>
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setOpenDoc('vision')}
+            className="text-xs font-medium rounded-lg px-3 py-2 bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-500 hover:text-gray-200 transition-colors hidden sm:block"
+          >
+            Product Vision
+          </button>
+          <button
+            onClick={() => setOpenDoc('hackathon')}
+            className="text-xs font-medium rounded-lg px-3 py-2 bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-500 hover:text-gray-200 transition-colors hidden sm:block"
+          >
+            Hack Scope
+          </button>
         <button
           onClick={handleRefreshClick}
           className={`text-xs font-medium rounded-lg px-4 py-2 transition-colors ${
@@ -112,6 +129,7 @@ export default function BriefScreen({ result, onRefresh, onChangeDomain, refresh
         >
           {confirmPending ? 'Confirm refresh?' : 'Refresh Results'}
         </button>
+        </div>
       </div>
 
       {refreshError && (
@@ -220,6 +238,17 @@ export default function BriefScreen({ result, onRefresh, onChangeDomain, refresh
         )}
 
       </div>
+
+      {openDoc === 'vision' && (
+        <DocModal title="Overall Product Vision" onClose={() => setOpenDoc(null)}>
+          <VisionDoc />
+        </DocModal>
+      )}
+      {openDoc === 'hackathon' && (
+        <DocModal title="Scope for the ContextCon Hack" onClose={() => setOpenDoc(null)}>
+          <HackathonDoc />
+        </DocModal>
+      )}
     </div>
   )
 }

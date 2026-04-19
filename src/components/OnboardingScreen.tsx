@@ -8,7 +8,7 @@ type Props = {
   error?: string | null
 }
 
-const EXAMPLES = ['notion.so', 'linear.app', 'figma.com']
+const EXAMPLES = ['retool.com', 'notion.so', 'linear.app', 'figma.com']
 
 function cleanDomain(raw: string): string {
   return raw
