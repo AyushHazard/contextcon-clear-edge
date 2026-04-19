@@ -106,13 +106,13 @@ export async function findCompetitorsByTaxonomy(
     },
     fields: BASE_FIELDS,
     sorts: [{ column: 'funding.total_investment_usd', order: 'desc' }],
-    limit: 10,
+    limit: 20,
   })
 
-  // Exclude the user's own company, take top 10 for Gemini verification step
+  // Exclude the user's own company, take top 20 for Gemini verification step
   return results
     .filter((c) => c.crustdata_company_id !== excludeId)
-    .slice(0, 10)
+    .slice(0, 20)
 }
 
 export async function enrichCompanyIds(

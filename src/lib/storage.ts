@@ -1,6 +1,6 @@
 import type { AnalysisResult, StoredState } from './types'
 
-const KEY = 'clear_edge_v1'
+const KEY = 'clear_edge_v2'
 
 function isBrowser() {
   return typeof window !== 'undefined'
